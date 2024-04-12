@@ -1,6 +1,7 @@
 -- patient with the most visits
 select A.patientID, count(*) as `totalVisits` from `appointment` A
-inner join patient P on A.PatientID = P.PatientID group by A.PatientID order by `totalVisits` desc;
+inner join patient P on A.PatientID = P.PatientID where A.AppointmentStatus = 'Completed'
+group by A.PatientID order by `totalVisits` desc;
 
 
 --Highest paying Customers/patient spending
@@ -8,13 +9,13 @@ SELECT A.PatientID, P.FirstName, P.Email, SUM(S.Cost) AS `totalSpent`
 FROM `appointment` A
 LEFT JOIN `service` S ON A.ServiceCode = S.ServiceCode
 LEFT JOIN `patient` P ON A.PatientID = P.PatientID
-WHERE A.AppointmentStatus = 'Completed'
+WHERE A.AppointmentStatus = 'Completed' OR A.AppointmentStatus = 'Missed'
 GROUP BY A.PatientID
 ORDER BY `totalSpent` DESC;
 
 --most visited dentist/Dentist with most appointments
-select A.DentistID, count(*) as `Appointments` from Appointment A inner join 
-Dentist D on D.DentistID = A.DentistID group by A.DentistID order by `Appointments` desc;
+select A.DentistID, count(*) as `Appointments` from appointment A inner join 
+dentist D on D.DentistID = A.DentistID group by A.DentistID order by `Appointments` desc;
 
 --Most requested dental service
 CREATE VIEW `MostRequestedService` AS
@@ -94,6 +95,8 @@ FROM patient P
 LEFT JOIN appointment A ON P.PatientID = A.PatientID
 GROUP BY AgeGroup;
 
+SELECT * FROM PatientAgeAndAppointmentCount;
+
 -- Dentists with most positive appointment feedbacks
 SELECT 
     A.AppointmentID,
@@ -104,7 +107,8 @@ SELECT
 FROM appointment A
 INNER JOIN Dentist D ON A.DentistID = D.DentistID
 GROUP BY D.DentistID, D.FirstName, D.LastName
-ORDER BY PositiveFeedbacks;
+ORDER BY PositiveFeedbacks DESC
+LIMIT 1;
 
 --Dentist with most negative appointment feedbacks
 SELECT 
@@ -115,6 +119,7 @@ SELECT
 FROM `appointment` A
 INNER JOIN `dentist` D ON A.DentistID = D.DentistID
 GROUP BY D.DentistID, D.FirstName, D.LastName
-ORDER BY `NegativeFeedbacks` DESC;
+ORDER BY `NegativeFeedbacks` DESC
+LIMIT 1;
 
 

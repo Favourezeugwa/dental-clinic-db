@@ -131,3 +131,9 @@ VALUES
     ('DEC', 3), ('IMP', 3), ('BRI', 3),
     ('BRA', 4), ('CSU', 4), ('OMS', 4),
     ('CON', 5), ('TEX', 5), ('FIL', 5);
+
+CREATE TABLE `appointmentLog`
+(`ID` INT NOT NULL PRIMARY KEY,
+`Action` VARCHAR(20) NOT NULL,
+`ActionDateTime` DATETIME NOT NULL,
+CONSTRAINT `fk_dentistID` FOREIGN KEY `ID` REFERENCES appointment(`AppointmentID`));
