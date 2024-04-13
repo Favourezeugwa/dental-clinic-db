@@ -30,7 +30,7 @@ CREATE TABLE `dentist` (
     `DentistID` INT PRIMARY KEY AUTO_INCREMENT,
     `FirstName` VARCHAR(30) NOT NULL,
     `LastName` VARCHAR(30) NOT NULL,
-    `Specialty` VARCHAR(20) NOT NULL,
+    `Specialty` VARCHAR(30) NOT NULL,
     `ContactNumber` CHAR(10) NOT NULL,
     `Email` VARCHAR(30) NOT NULL
 );
@@ -39,12 +39,27 @@ CREATE TABLE `dentist` (
 INSERT INTO `dentist` (`FirstName`, `LastName`, `Specialty`, `ContactNumber`, `Email`) VALUES
 ('Andre', 'Smith', 'Dentistry', '9794567890', 'asmith@dentalclinic.com'),
 ('Marta', 'Diaz', 'Dentistry', '9794578930', 'mdiaz@dentalclinic.com'),
-('Michael', 'Hoffman', 'Orthodontology', '9794678320', 'mhoffman@dentalclinic.com');
+('Michael', 'Hoffman', 'Orthodontology', '9794678320', 'mhoffman@dentalclinic.com'),
+('Emily', 'Johnson', 'Pediatric Dentistry', '9876543210', 'ejohnson@dentalclinic.com'),
+('Daniel', 'Lee', 'Orthodontics', '9876543211', 'dlee@dentalclinic.com'),
+('Samantha', 'Wilson', 'Oral Surgery', '9876543212', 'swilson@dentalclinic.com'),
+('Kevin', 'Garcia', 'Periodontics', '9876543213', 'kgarcia@dentalclinic.com'),
+('Jessica', 'Martinez', 'Endodontics', '9876543214', 'jmartinez@dentalclinic.com'),
+('Brian', 'Wong', 'Cosmetic Dentistry', '9876543215', 'bwong@dentalclinic.com'),
+('Ashley', 'Taylor', 'General Dentistry', '9876543216', 'ataylor@dentalclinic.com'),
+('Michael', 'Lewis', 'Prosthodontics', '9876543217', 'mlewis@dentalclinic.com'),
+('Michelle', 'Hernandez', 'Oral Pathology', '9876543218', 'mhernandez@dentalclinic.com'),
+('David', 'Anderson', 'Dental Implants', '9876543219', 'danderson@dentalclinic.com'),
+('Laura', 'Clark', 'Restorative Dentistry', '9876543220', 'lclark@dentalclinic.com'),
+('Steven', 'Young', 'Maxillofacial Surgery', '9876543221', 'syoung@dentalclinic.com'),
+('Kimberly', 'Scott', 'Geriatric Dentistry', '9876543222', 'kscott@dentalclinic.com'),
+('John', 'White', 'Cosmetic Dentistry', '9876543223', 'jwhite@dentalclinic.com'),
+('Rachel', 'Adams', 'Pediatric Dentistry', '9876543224', 'radams@dentalclinic.com');
 
 -- Table structure for table `service`
 CREATE TABLE `service` (
     `ServiceCode` CHAR(3) PRIMARY KEY,
-    `ServiceName` VARCHAR(20) NOT NULL,
+    `ServiceName` VARCHAR(30) NOT NULL,
     `Cost` DECIMAL(10,2) NOT NULL
 );
 
@@ -72,6 +87,14 @@ CREATE TABLE `servicesByDentist` (
   CONSTRAINT `fk_dentistID` FOREIGN KEY (`DentistID`) REFERENCES `dentist` (`DentistID`) ON DELETE RESTRICT
 );
 
+INSERT INTO `servicesByDentist` (`ServiceCode`, `DentistID`)
+VALUES 
+    ('CON', 1), ('DBG', 1), ('PSU', 1),
+    ('TEX', 2), ('FIL', 2), ('RCT', 2),
+    ('DEC', 3), ('IMP', 3), ('BRI', 3),
+    ('BRA', 4), ('CSU', 4), ('OMS', 4),
+    ('CON', 5), ('TEX', 5), ('FIL', 5);
+
 -- Table structure for table `appointment`
 CREATE TABLE `appointment` (
     `AppointmentID` INT PRIMARY KEY AUTO_INCREMENT,
@@ -79,7 +102,7 @@ CREATE TABLE `appointment` (
     `ServiceCode` CHAR(3) NOT NULL,
     `DentistID` INT NOT NULL,
     `AppointmentDate` DATE NOT NULL CHECK (`AppointmentDate` BETWEEN '2024-01-01' AND '2024-12-31'),
-    `AppointmentTime` TIME NOT NULL CHECK (`AppointmentTime` BETWEEN '09:00' AND '16:00')
+    `AppointmentTime` TIME NOT NULL CHECK (`AppointmentTime` BETWEEN '09:00:00' AND '16:00:00'),
     `AppointmentStatus` VARCHAR(10) NOT NULL DEFAULT 'Upcoming' CHECK (`AppointmentStatus` IN ('Upcoming', 'Completed', 'Missed', 'Cancelled')),
     `DentistReport` TEXT DEFAULT NULL,
     `Prescription` TEXT DEFAULT NULL,
@@ -106,34 +129,9 @@ VALUES
 (1, 'CON', 1, '2024-04-20', '11:00:00', 'Completed', 'Needs rescheduling', 'Prescription for fluoride treatment', 'Positive feedback: Timely appointment'),
 (7, 'IMP', 3, '2024-05-10', '12:00:00', 'Completed', 'Preparation required', NULL, 'Negative feedback: Unfriendly receptionist');
 
-INSERT INTO `dentist` (`FirstName`, `LastName`, `Specialty`, `ContactNumber`, `Email`)
-VALUES 
-    ('Emily', 'Johnson', 'Pediatric Dentistry', '9876543210', 'ejohnson@dentalclinic.com'),
-    ('Daniel', 'Lee', 'Orthodontics', '9876543211', 'dlee@dentalclinic.com'),
-    ('Samantha', 'Wilson', 'Oral Surgery', '9876543212', 'swilson@dentalclinic.com'),
-    ('Kevin', 'Garcia', 'Periodontics', '9876543213', 'kgarcia@dentalclinic.com'),
-    ('Jessica', 'Martinez', 'Endodontics', '9876543214', 'jmartinez@dentalclinic.com'),
-    ('Brian', 'Wong', 'Cosmetic Dentistry', '9876543215', 'bwong@dentalclinic.com'),
-    ('Ashley', 'Taylor', 'General Dentistry', '9876543216', 'ataylor@dentalclinic.com'),
-    ('Michael', 'Lewis', 'Prosthodontics', '9876543217', 'mlewis@dentalclinic.com'),
-    ('Michelle', 'Hernandez', 'Oral Pathology', '9876543218', 'mhernandez@dentalclinic.com'),
-    ('David', 'Anderson', 'Dental Implants', '9876543219', 'danderson@dentalclinic.com'),
-    ('Laura', 'Clark', 'Restorative Dentistry', '9876543220', 'lclark@dentalclinic.com'),
-    ('Steven', 'Young', 'Maxillofacial Surgery', '9876543221', 'syoung@dentalclinic.com'),
-    ('Kimberly', 'Scott', 'Geriatric Dentistry', '9876543222', 'kscott@dentalclinic.com'),
-    ('John', 'White', 'Cosmetic Dentistry', '9876543223', 'jwhite@dentalclinic.com'),
-    ('Rachel', 'Adams', 'Pediatric Dentistry', '9876543224', 'radams@dentalclinic.com');
-
-INSERT INTO `servicesByDentist` (`ServiceCode`, `DentistID`)
-VALUES 
-    ('CON', 1), ('DBG', 1), ('PSU', 1),
-    ('TEX', 2), ('FIL', 2), ('RCT', 2),
-    ('DEC', 3), ('IMP', 3), ('BRI', 3),
-    ('BRA', 4), ('CSU', 4), ('OMS', 4),
-    ('CON', 5), ('TEX', 5), ('FIL', 5);
-
+-- Table structure for table `appointmentLog`
 CREATE TABLE `appointmentLog`
 (`ID` INT NOT NULL PRIMARY KEY,
-`Action` VARCHAR(20) NOT NULL,
+`Action` VARCHAR(10) NOT NULL,
 `ActionDateTime` DATETIME NOT NULL,
-CONSTRAINT `fk_dentistID` FOREIGN KEY `ID` REFERENCES appointment(`AppointmentID`));
+CONSTRAINT `fk_dentistID_appointmentLog` FOREIGN KEY (`ID`) REFERENCES `appointment` (`AppointmentID`));
