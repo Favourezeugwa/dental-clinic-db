@@ -17,30 +17,16 @@ ORDER BY `totalSpent` DESC;
 select A.DentistID, count(*) as `Appointments` from appointment A inner join 
 dentist D on D.DentistID = A.DentistID group by A.DentistID order by `Appointments` desc;
 
---Most requested dental service
-CREATE VIEW `MostRequestedService` AS
-SELECT A.ServiceCode AS ServiceID, S.ServiceName AS `Service`, MAX(`ServiceRequests`) AS `MaxServiceRequests`
+--Most and least requested dental services
+SELECT Services.ServiceCode AS ServiceID, Services.ServiceName AS `Service`, MAX(Services.ServiceRequests) AS `MaxServiceRequests`
 FROM (
     SELECT A.ServiceCode, S.ServiceName, COUNT(*) AS `ServiceRequests`
     FROM `appointment` A
     INNER JOIN `service` S ON A.ServiceCode = S.ServiceCode
     GROUP BY A.ServiceCode, S.ServiceName
-    ORDER BY `ServiceRequests` DESC
 ) AS Services
-GROUP BY Services.ServiceCode, Services.ServiceName;
-
---Least requested dental service
-CREATE VIEW `LeastRequestedService` AS
-SELECT A.ServiceCode AS ServiceID, S.ServiceName AS `Service`, MIN(`ServiceRequests`) AS `MinServiceRequests`
-FROM (
-    SELECT A.ServiceCode, S.ServiceName, COUNT(*) AS `ServiceRequests`
-    FROM `appointment` A
-    INNER JOIN `service` S ON A.ServiceCode = S.ServiceCode
-    GROUP BY A.ServiceCode, S.ServiceName
-    ORDER BY `ServiceRequests` DESC
-) AS Services
-GROUP BY Services.ServiceCode, Services.ServiceName;
-
+GROUP BY Services.ServiceCode, Services.ServiceName
+ORDER BY MaxServiceRequests DESC;
 
 --Service specific max count
 SELECT A.ServiceCode AS ServiceID, S.ServiceName AS `Service`, COUNT(*) AS MaxCount
