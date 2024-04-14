@@ -1,0 +1,73 @@
+@import url("styles.css");
+
+/* Main content area styles */
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  margin: 10px;
+}
+
+/* Page header styles */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2c3e50; /* Dark blue */
+}
+
+.table-container {
+  height: 80%;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden;
+  position: relative;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+thead {
+  background-color: #37474f; /* Green */
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+thead th {
+  padding: 12px 15px;
+  text-align: left;
+  font-weight: bold;
+}
+
+tbody tr:hover {
+  background-color: #eeebeb; /* Light green on hover */
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #f9f9f9; /* Light gray */
+}
+
+tbody td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #e0e0e0; /* Light gray */
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tfoot {
+  background-color: #80cbc4; /* Teal */
+  color: white;
+  font-weight: bold;
+  padding: 12px 15px;
+}
