@@ -46,15 +46,6 @@ INSERT INTO `dentist` (`FirstName`, `LastName`, `Specialty`, `ContactNumber`, `E
 ('Kevin', 'Garcia', 'Periodontics', '9876543213', 'kgarcia@dentalclinic.com'),
 ('Jessica', 'Martinez', 'Endodontics', '9876543214', 'jmartinez@dentalclinic.com'),
 ('Brian', 'Wong', 'Cosmetic Dentistry', '9876543215', 'bwong@dentalclinic.com'),
-('Ashley', 'Taylor', 'General Dentistry', '9876543216', 'ataylor@dentalclinic.com'),
-('Michael', 'Lewis', 'Prosthodontics', '9876543217', 'mlewis@dentalclinic.com'),
-('Michelle', 'Hernandez', 'Oral Pathology', '9876543218', 'mhernandez@dentalclinic.com'),
-('David', 'Anderson', 'Dental Implants', '9876543219', 'danderson@dentalclinic.com'),
-('Laura', 'Clark', 'Restorative Dentistry', '9876543220', 'lclark@dentalclinic.com'),
-('Steven', 'Young', 'Maxillofacial Surgery', '9876543221', 'syoung@dentalclinic.com'),
-('Kimberly', 'Scott', 'Geriatric Dentistry', '9876543222', 'kscott@dentalclinic.com'),
-('John', 'White', 'Cosmetic Dentistry', '9876543223', 'jwhite@dentalclinic.com'),
-('Rachel', 'Adams', 'Pediatric Dentistry', '9876543224', 'radams@dentalclinic.com');
 
 -- Table structure for table `service`
 CREATE TABLE `service` (
@@ -93,7 +84,10 @@ VALUES
     ('TEX', 2), ('FIL', 2), ('RCT', 2),
     ('DEC', 3), ('IMP', 3), ('BRI', 3),
     ('BRA', 4), ('CSU', 4), ('OMS', 4),
-    ('CON', 5), ('TEX', 5), ('FIL', 5);
+    ('CON', 5), ('TEX', 5), ('FIL', 5),
+    ('DEC', 6), ('IMP', 6), ('BRI', 7),
+    ('BRA', 7), ('CSU', 7), ('OMS', 8),
+    ('CON', 8), ('TEX', 9), ('FIL', 9);
 
 -- Table structure for table `appointment`
 CREATE TABLE `appointment` (
@@ -114,20 +108,20 @@ CREATE TABLE `appointment` (
 INSERT INTO `appointment` (`PatientID`, `ServiceCode`, `DentistID`, `AppointmentDate`, `AppointmentTime`, `AppointmentStatus`, `DentistReport`, `Prescription`, `PatientFeedback`)
 VALUES
 (1, 'CON', 1, '2024-03-15', '10:00:00', 'Completed', 'No report', 'Prescription for medication X', 'Positive feedback: Excellent service and care'),
-(2, 'TEX', 2, '2024-04-10', '11:00:00', 'Completed', 'Needs rescheduling', 'Prescription for pain relief', 'Negative feedback: Long waiting time'),
-(3, 'PSU', 1, '2024-05-20', '12:00:00', 'Completed', 'Preparation required', NULL, 'Positive feedback: Professional and friendly staff'),
-(4, 'FIL', 2, '2024-06-05', '13:00:00', 'Completed', 'Completed', 'Prescription for fluoride toothpaste', 'Positive feedback: Great experience overall'),
-(5, 'DEC', 3, '2024-07-15', '12:00:00', 'Completed', 'No issues reported', NULL, 'Negative feedback: Uncomfortable during treatment'),
-(6, 'CON', 1, '2024-08-20', '10:00:00', 'Completed', 'Needs rescheduling', 'Prescription for mouthwash', 'Positive feedback: Dentist was very informative'),
-(1, 'TEX', 5, '2024-09-10', '11:00:00', 'Completed', 'Preparation required', NULL, 'Negative feedback: Appointment delayed'),
-(4, 'DEC', 3, '2024-10-05', '13:00:00', 'Completed', 'Completed', 'Prescription for oral hygiene', 'Positive feedback: Staff was helpful and courteous'),
-(7, 'FIL', 5, '2024-11-15', '14:00:00', 'Completed', 'No issues reported', NULL, 'Negative feedback: Facilities were not clean'),
-(2, 'RCT', 2, '2024-12-20', '15:00:00', 'Completed', 'Needs rescheduling', 'Prescription for dental floss', 'Positive feedback: Easy booking process'),
-(1, 'BRA', 4, '2024-01-10', '11:00:00', 'Completed', 'Preparation required', NULL, 'Negative feedback: Dentist seemed rushed'),
-(3, 'OMS', 4, '2024-02-05', '09:00:00', 'Completed', 'Completed', 'Prescription for pain relief', 'Positive feedback: Painless procedure'),
-(6, 'FIL', 2, '2024-03-15', '10:00:00', 'Completed', 'No issues reported', NULL, 'Negative feedback: Communication could be improved'),
-(1, 'CON', 1, '2024-04-20', '11:00:00', 'Completed', 'Needs rescheduling', 'Prescription for fluoride treatment', 'Positive feedback: Timely appointment'),
-(7, 'IMP', 3, '2024-05-10', '12:00:00', 'Completed', 'Preparation required', NULL, 'Negative feedback: Unfriendly receptionist');
+(2, 'TEX', 2, '2024-03-15', '11:00:00', 'Completed', 'Needs rescheduling', 'Prescription for pain relief', 'Negative feedback: Long waiting time'),
+(3, 'PSU', 1, '2024-03-15', '12:00:00', 'Completed', 'Preparation required', NULL, 'Positive feedback: Professional and friendly staff'),
+(4, 'FIL', 2, '2024-03-16', '13:00:00', 'Cancelled', NULL, NULL, NULL),
+(5, 'DEC', 3, '2024-03-16', '12:00:00', 'Completed', 'No issues reported', NULL, 'Negative feedback: Uncomfortable during treatment'),
+(6, 'CON', 1, '2024-03-17', '10:00:00', 'Completed', 'Needs rescheduling', 'Prescription for mouthwash', 'Positive feedback: Dentist was very informative'),
+(1, 'TEX', 5, '2024-03-17', '11:00:00', 'Cancelled', NULL, NULL, NULL),
+(4, 'DEC', 3, '2024-04-01', '13:00:00', 'Completed', 'Prescription for oral hygiene', 'Positive feedback: Staff was helpful and courteous'),
+(7, 'FIL', 5, '2024-04-02', '14:00:00', 'Completed', 'No issues reported', NULL, 'Negative feedback: Facilities were not clean'),
+(2, 'RCT', 2, '2024-04-03', '15:00:00', 'Completed', 'Needs rescheduling', 'Prescription for dental floss', 'Positive feedback: Easy booking process'),
+(1, 'BRA', 4, '2024-04-04', '11:00:00', 'Completed', 'Preparation required', NULL, 'Negative feedback: Dentist seemed rushed'),
+(3, 'OMS', 4, '2024-04-04', '09:00:00', 'Completed', 'Prescription for pain relief', 'Positive feedback: Painless procedure'),
+(6, 'FIL', 2, '2024-04-20', '10:00:00', 'Upcoming', NULL, NULL, NULL),
+(1, 'CON', 1, '2024-04-21', '11:00:00', 'Upcoming', NULL, NULL, NULL),
+(7, 'IMP', 3, '2024-04-21', '12:00:00', 'Upcoming', NULL, NULL, NULL);
 
 -- Table structure for table `appointmentLog`
 CREATE TABLE `appointmentLog`
