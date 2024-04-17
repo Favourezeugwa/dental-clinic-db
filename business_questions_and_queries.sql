@@ -108,4 +108,8 @@ GROUP BY D.DentistID, D.FirstName, D.LastName
 ORDER BY `NegativeFeedbacks` DESC
 LIMIT 1;
 
-
+--Display full ServicesByDentist table with dentist name 
+SELECT sd.ServiceCode, s.ServiceName, CONCAT(d.FirstName, " ", d.LastName) AS Dentist
+FROM servicesByDentist sd
+LEFT JOIN Service s ON sd.ServiceCode = s.ServiceCode
+LEFT JOIN Dentist d ON sd.DentistID = d.DentistID;

@@ -1,22 +1,10 @@
---Set default appointment status to 'upcoming' on insert into appointment table trigger
-CREATE TRIGGER SetDefaultAppointmentStatus
-BEFORE INSERT ON `appointment`
-FOR EACH ROW
-BEGIN
-    IF NEW.AppointmentStatus IS NULL THEN
-        SET NEW.AppointmentStatus = 'Upcoming';
-    END IF;
-END;
-
---Check appointment date range for new appointment trigger
+-- Check appointment date is a current or future date
 CREATE TRIGGER CheckAppointmentDate
 BEFORE INSERT ON `appointment`
 FOR EACH ROW
 BEGIN
-    DECLARE min_appointment_date DATE;
-    SET min_appointment_date = DATE_ADD(CURDATE(), INTERVAL 6 MONTH);
-    IF NEW.AppointmentDate NOT BETWEEN CURDATE() AND min_appointment_date THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Appointment date must be at least 3 months from the current date';
+    IF NEW.AppointmentDate < CURDATE() THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Appointment date must be today or a future date';
     END IF;
 END;
 
@@ -29,41 +17,113 @@ BEGIN
     SELECT COUNT(*) INTO overlap
     FROM `appointment`
     WHERE `DentistID` = NEW.DentistID
-    AND NEW.AppointmentDate = `AppointmentDate`
-    AND ((NEW.StartTime BETWEEN `StartTime` AND `EndTime`) OR (NEW.EndTime BETWEEN `StartTime` AND `EndTime`));
-    
+    AND (`AppointmentTime` = NEW.AppointmentTime 
+            OR (`AppointmentTime` BETWEEN ADDTIME(NEW.AppointmentTime, '-2:00')
+                AND ADDTIME(NEW.AppointmentTime, '2:00'))
+        );
     IF overlap > 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Appointment overlaps with another appointment for the dentist';
     END IF;
 END;
 
 --Log appointment cancellations trigger
-CREATE TRIGGER LogAppointmentCancellation
+CREATE TRIGGER Log_Missed_And_Cancelled_Appointments
 AFTER UPDATE ON `appointment`
 FOR EACH ROW
 BEGIN
     IF OLD.AppointmentStatus <> 'Cancelled' AND NEW.AppointmentStatus = 'Cancelled' THEN
-        INSERT INTO `appointmentLog` (`ID`, `Action`, `ActionDateTime`)
+        -- Log cancelled appointment
+        INSERT INTO `appointmentlog` (`ID`, `Action`, `ActionDateTime`)
         VALUES (NEW.AppointmentID, 'Cancelled', NOW());
+    ELSEIF OLD.AppointmentStatus <> 'Missed' AND NEW.AppointmentStatus = 'Missed' THEN
+        -- Log missed appointment
+        INSERT INTO `appointmentlog` (`ID`, `Action`, `ActionDateTime`)
+        VALUES (NEW.AppointmentID, 'Missed', NOW());
     END IF;
 END;
 
--- Apply 10% missed apointment charge trigger
-CREATE TRIGGER ApplyMissedAppointmentCharge
-AFTER UPDATE ON `appointment`
+--prevent duplicate inserts into appointment table
+CREATE TRIGGER prevent_duplicate_appointment
+BEFORE INSERT ON appointment
 FOR EACH ROW
 BEGIN
-    -- Check if the appointment status changed to "Missed"
-    IF OLD.AppointmentStatus <> 'Missed' AND NEW.AppointmentStatus = 'Missed' THEN
-        -- Calculate the 10% charge on the appointment cost
-        DECLARE charge DECIMAL(10, 2);
-        SET charge = NEW.Cost * 0.10;
-        
-        -- Update the payment status to "Unpaid" since the patient needs to pay the charge
-        SET NEW.PaymentStatus = 'Unpaid';
-        
-        -- Apply the 10% charge to the appointment cost
-        SET NEW.Cost = NEW.Cost + charge;
+    DECLARE duplicate_found INT;
+    SELECT COUNT(*) INTO duplicate_found
+    FROM appointment
+    WHERE PatientID = NEW.PatientID
+      AND DentistID = NEW.DentistID
+      AND AppointmentDate = NEW.AppointmentDate
+      AND AppointmentTime = NEW.AppointmentTime
+      AND ServiceCode = NEW.ServiceCode;
+    
+    IF duplicate_found > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate appointment found';
+    END IF;
+END
+
+--prevent duplicate inserts into dentist table
+CREATE TRIGGER prevent_duplicate_dentist
+BEFORE INSERT ON dentist
+FOR EACH ROW
+BEGIN
+    DECLARE duplicate_found INT;
+    SELECT COUNT(*) INTO duplicate_found
+    FROM dentist
+    WHERE FirstName = NEW.FirstName
+      AND LastName = NEW.LastName
+      AND ContactNumber = NEW.ContactNumber;
+    
+    IF duplicate_found > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate dentist found';
+    END IF;
+END;
+
+--prevent duplicate inserts into patient table
+CREATE TRIGGER prevent_duplicate_patient
+BEFORE INSERT ON patient
+FOR EACH ROW
+BEGIN
+    DECLARE duplicate_found INT;
+    SELECT COUNT(*) INTO duplicate_found
+    FROM patient
+    WHERE FirstName = NEW.FirstName
+      AND LastName = NEW.LastName
+      AND DOB = NEW.DOB;
+    
+    IF duplicate_found > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate patient found';
+    END IF;
+END;
+
+--prevent duplicate inserts into Services table
+CREATE TRIGGER prevent_duplicate_service
+BEFORE INSERT ON `service`
+FOR EACH ROW
+BEGIN
+    DECLARE duplicate_found INT;
+    SELECT COUNT(*) INTO duplicate_found
+    FROM service
+    WHERE ServiceCode = NEW.ServiceCode
+    OR ServiceName = NEW.ServiceName;
+    
+    IF duplicate_found > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate service found';
+    END IF;
+END
+
+--prevent duplicate inserts into ServicesByDentist table
+CREATE TRIGGER prevent_duplicate_servicesByDentist
+BEFORE INSERT ON servicesByDentist
+FOR EACH ROW
+BEGIN
+    DECLARE duplicate_found INT;
+    SELECT COUNT(*) INTO duplicate_found
+    FROM servicesByDentist
+    WHERE ServiceCode = NEW.ServiceCode AND
+     DentistID = NEW.DentistID;
+    
+    IF duplicate_found > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate service by Dentist found';
     END IF;
 END;
 
@@ -107,7 +167,7 @@ CREATE PROCEDURE Cancel_Appointment(
 BEGIN
     UPDATE `appointment`
     SET `AppointmentStatus` = 'Cancelled'
-    WHERE `AppointmentID` = app_id;
+    WHERE `AppointmentID` = appointment_id;
 END;
 
 --schedule appointment procedure
@@ -123,88 +183,6 @@ BEGIN
     VALUES (patient_id, dentist_id, service_code, app_date,  app_time);
 END;
 
-prevent duplicate inserts into appointment table
-CREATE TRIGGER prevent_duplicate_appointment
-BEFORE INSERT ON appointment
-FOR EACH ROW
-BEGIN
-    DECLARE duplicate_found INT;
-    SELECT COUNT(*) INTO duplicate_found
-    FROM appointment
-    WHERE PatientID = NEW.PatientID
-      AND DentistID = NEW.DentistID
-      AND AppointmentDate = NEW.AppointmentDate
-      AND ServiceCode = NEW.ServiceCode;
-    
-    IF duplicate_found > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate appointment found';
-    END IF;
-END
-
---prevent duplicate inserts into dentist table
-CREATE TRIGGER prevent_duplicate_dentist
-BEFORE INSERT ON dentist
-FOR EACH ROW
-BEGIN
-    DECLARE duplicate_found INT;
-    SELECT COUNT(*) INTO duplicate_found
-    FROM dentist
-    WHERE FirstName = NEW.FirstName
-      AND LastName = NEW.LastName
-      AND DOB = NEW.DOB;
-    
-    IF duplicate_found > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate dentist found';
-    END IF;
-END;
-
---prevent duplicate inserts into patient table
-CREATE TRIGGER prevent_duplicate_patient
-BEFORE INSERT ON patient
-FOR EACH ROW
-BEGIN
-    DECLARE duplicate_found INT;
-    SELECT COUNT(*) INTO duplicate_found
-    FROM patient
-    WHERE FirstName = NEW.FirstName
-      AND LastName = NEW.LastName
-      AND DOB = NEW.DOB;
-    
-    IF duplicate_found > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate patient found';
-    END IF;
-END;
-
---prevent duplicate inserts into Services table
-CREATE TRIGGER prevent_duplicate_service
-BEFORE INSERT ON service
-FOR EACH ROW
-BEGIN
-    DECLARE duplicate_found INT;
-    SELECT COUNT(*) INTO duplicate_found
-    FROM service
-    WHERE ServiceCode = NEW.ServiceCode;
-    
-    IF duplicate_found > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate service found';
-    END IF;
-END;
-
---prevent duplicate inserts into ServicesByDentist table
-CREATE TRIGGER prevent_duplicate_serviceByDentist
-BEFORE INSERT ON servicesByDentist
-FOR EACH ROW
-BEGIN
-    DECLARE duplicate_found INT;
-    SELECT COUNT(*) INTO duplicate_found
-    FROM servicesByDentist
-    WHERE ServiceCode = NEW.ServiceCode AND
-    WHERE DentistID = NEW.DentistID;
-    
-    IF duplicate_found > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Duplicate service by Dentist found';
-    END IF;
-END;
 
 --Get Patient Medical/Appointment History Procedure
 DELIMITER //
@@ -224,7 +202,8 @@ BEGIN
     -- Find the patient's ID based on the provided full name
     SELECT PatientID INTO patientID
     FROM patient
-    WHERE FirstName = firstName AND LastName = lastName;
+    WHERE (FirstName = firstName AND LastName = lastName)
+    OR (FirstName = lastName AND LastName = firstName);
 
     -- If the patient ID was found, query the appointment history
     IF patientID IS NOT NULL THEN
